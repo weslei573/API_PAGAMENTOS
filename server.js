@@ -3,7 +3,9 @@ const mercadopago = require("mercadopago");
 const app = express();
 
 // Configuração do Mercado Pago (versão 1.5.x)
-mercadopago.configurations.setAccessToken("APP_USR-484198822066678-040115-f71ac960f3d33f78e46ecca9bb070ba3-2350134427");
+mercadopago.configurations.setAccessToken(
+  "APP_USR-5808808895685245-040216-5db517eb05b8135d7ccef1ae8a6fbf8f-2350134427"
+);
 
 // Middlewares
 app.use(express.json());
