@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const mp = new MercadoPago('APP_USR-d4f099fe-592b-45fc-ba4a-eef0324848c5', {
+    const mp = new MercadoPago('APP_USR-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX', {
         locale: 'pt-BR'
     });
 
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Exibir loading
                 container.innerHTML = '<div class="loading">Carregando...</div>';
 
-                const response = await fetch('https://api-pagamentos-ten.vercel.app/criar_preferencia', {
+                const response = await fetch('https://seudominio.com/criar_preferencia', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
