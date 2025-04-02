@@ -1,29 +1,25 @@
+require("dotenv").config();
 const express = require("express");
 const mercadopago = require("mercadopago");
+const path = require("path");
 const app = express();
 
-// Configuração do Mercado Pago (versão 1.5.x)
-mercadopago.configurations.setAccessToken(
-  "APP_USR-5808808895685245-040216-5db517eb05b8135d7ccef1ae8a6fbf8f-2350134427"
-);
+// Configuração Mercado Pago
+mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
 
 // Middlewares
 app.use(express.json());
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
+app.use(express.static(path.join(__dirname, "public")));
 
-// Rota de criação de preferência
+// Rotas
 app.post("/criar_preferencia", async (req, res) => {
   try {
     const { title, unit_price, quantity } = req.body;
 
-    const preferenceData = {
+    const preference = {
       items: [
         {
-          title: title.substring(0, 255), // Limita o título
+          title: title.substring(0, 255),
           unit_price: Number(unit_price),
           quantity: Number(quantity),
           currency_id: "BRL",
@@ -34,34 +30,30 @@ app.post("/criar_preferencia", async (req, res) => {
         installments: 1,
       },
       back_urls: {
-        success: "http://localhost:3000/sucesso",
-        failure: "http://localhost:3000/erro",
-        pending: "http://localhost:3000/pendente",
+        success: process.env.SUCCESS_URL,
+        failure: process.env.FAILURE_URL,
+        pending: process.env.PENDING_URL,
       },
       auto_return: "approved",
-      statement_descriptor: "CONTRIBUICAO",
     };
 
-    const response = await mercadopago.preferences.create(preferenceData);
+    const response = await mercadopago.preferences.create(preference);
     res.json(response.body);
   } catch (error) {
-    console.error("Erro no backend:", error);
-    res.status(500).json({
-      error: "Erro ao processar pagamento",
-      details: error.message,
-    });
+    console.error("Erro no servidor:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Rotas de redirecionamento
+// Redirecionamentos
 app.get("/sucesso", (req, res) =>
-  res.send("Pagamento aprovado! Obrigado pela contribuição.")
+  res.sendFile(path.join(__dirname, "public", "sucesso.html"))
 );
 app.get("/erro", (req, res) =>
-  res.send("Pagamento recusado. Tente novamente.")
+  res.sendFile(path.join(__dirname, "public", "erro.html"))
 );
 app.get("/pendente", (req, res) =>
-  res.send("Pagamento pendente. Aguarde confirmação.")
+  res.sendFile(path.join(__dirname, "public", "pendente.html"))
 );
 
 // Iniciar servidor
