@@ -40,12 +40,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* 
-serve APP_USR-5808808895685245-040216-5db517eb05b8135d7ccef1ae8a6fbf8f-2350134427
-conf: 
-
-*/
-
 .apoiar__box:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);

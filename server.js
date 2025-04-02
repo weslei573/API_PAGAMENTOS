@@ -1,22 +1,42 @@
 require("dotenv").config();
 const express = require("express");
 const mercadopago = require("mercadopago");
-const path = require("path");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+
 const app = express();
 
-// Configuração Mercado Pago
+// Configuração do Mercado Pago
 mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
 
-// Middlewares
+// Middlewares de segurança
+app.use(helmet());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
-// Rotas
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100,
+});
+app.use(limiter);
+
+// Configuração CORS
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Methods", "POST, GET");
+  next();
+});
+
+// Rota de saúde
+app.get("/health", (req, res) => res.status(200).send("OK"));
+
+// Rota principal
 app.post("/criar_preferencia", async (req, res) => {
   try {
     const { title, unit_price, quantity } = req.body;
 
-    const preference = {
+    const preferenceData = {
       items: [
         {
           title: title.substring(0, 255),
@@ -30,31 +50,23 @@ app.post("/criar_preferencia", async (req, res) => {
         installments: 1,
       },
       back_urls: {
-        success: process.env.SUCCESS_URL,
-        failure: process.env.FAILURE_URL,
-        pending: process.env.PENDING_URL,
+        success: `${process.env.FRONTEND_URL}/sucesso`,
+        failure: `${process.env.FRONTEND_URL}/erro`,
+        pending: `${process.env.FRONTEND_URL}/pendente`,
       },
       auto_return: "approved",
     };
 
-    const response = await mercadopago.preferences.create(preference);
+    const response = await mercadopago.preferences.create(preferenceData);
     res.json(response.body);
   } catch (error) {
-    console.error("Erro no servidor:", error);
-    res.status(500).json({ error: error.message });
+    console.error("Erro no backend:", error);
+    res.status(500).json({
+      error: "Erro ao processar pagamento",
+      details: error.message,
+    });
   }
 });
-
-// Redirecionamentos
-app.get("/sucesso", (req, res) =>
-  res.sendFile(path.join(__dirname, "public", "sucesso.html"))
-);
-app.get("/erro", (req, res) =>
-  res.sendFile(path.join(__dirname, "public", "erro.html"))
-);
-app.get("/pendente", (req, res) =>
-  res.sendFile(path.join(__dirname, "public", "pendente.html"))
-);
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;

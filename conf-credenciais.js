@@ -1,56 +1,50 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const mp = new MercadoPago("APP_USR-59168eef-c0e5-4e67-9a45-ae08de9d9693", {
+  const mp = new MercadoPago("SUA_CHAVE_PUBLICA_RENDER", {
     locale: "pt-BR",
   });
 
   document.querySelectorAll(".btn-missoes").forEach((button) => {
     button.addEventListener("click", async (e) => {
       e.preventDefault();
+
       const amount = button.dataset.value;
       const containerId = `checkout_${amount}`;
-
-      // Limpar checkouts anteriores
-      document
-        .querySelectorAll(".checkout-container")
-        .forEach((c) => (c.innerHTML = ""));
+      const container = document.getElementById(containerId);
 
       try {
-        // Mostrar loading
-        const container = document.getElementById(containerId);
-        container.innerHTML = "<p>Carregando...</p>";
+        // Limpar checkouts anteriores
+        document
+          .querySelectorAll(".checkout-container")
+          .forEach((c) => (c.innerHTML = ""));
 
-        // Criar preferência
+        // Exibir loading
+        container.innerHTML = '<div class="loading">Carregando...</div>';
+
         const response = await fetch("/criar_preferencia", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            title: `Apoio Mensal - R$ ${amount}`,
+            title: `Contribuição Mensal - R$ ${amount}`,
             unit_price: amount,
             quantity: 1,
           }),
         });
 
-        if (!response.ok) {
-          throw new Error("Erro ao criar pagamento");
-        }
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Erro no servidor");
 
-        const preference = await response.json();
-
-        // Renderizar checkout
         mp.checkout({
-          preference: { id: preference.id },
+          preference: { id: data.id },
           render: {
             container: `#${containerId}`,
-            label: "Continuar Pagamento",
+            label: "Pagar Agora",
             type: "wallet",
           },
         });
       } catch (error) {
-        document.getElementById(containerId).innerHTML = `
-                    <p class="error">Erro: ${error.message}</p>
-                `;
+        container.innerHTML = `<div class="error">${error.message}</div>`;
         console.error("Erro:", error);
       }
     });
