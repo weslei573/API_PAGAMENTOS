@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const mp = new MercadoPago("SUA_CHAVE_PUBLICA_RENDER", {
+  const mp = new MercadoPago("APP_USR-59168eef-c0e5-4e67-9a45-ae08de9d9693", {
     locale: "pt-BR",
   });
 
