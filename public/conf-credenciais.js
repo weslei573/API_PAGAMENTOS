@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = "<p>Carregando...</p>";
 
         const response = await fetch(
-          "https://seuservidor.com/criar_preferencia",
+          "https://api-pagamentos-f5wv.onrender.com/criar_preferencia",
           {
             method: "POST",
             headers: {
