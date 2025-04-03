@@ -7,16 +7,26 @@ document.addEventListener("DOMContentLoaded", () => {
     button.addEventListener("click", async (e) => {
       e.preventDefault();
       const amount = button.dataset.value;
-      const container = document.getElementById(`checkout-${amount}`);
 
-      // Limpa todos os checkouts
-      document
-        .querySelectorAll(".checkout-container")
-        .forEach((c) => (c.innerHTML = ""));
+      // 1. Verificação de elemento existente
+      const containerId = `checkout-${amount}`;
+      const container = document.getElementById(containerId);
+
+      if (!container) {
+        console.error(`Container #${containerId} não encontrado`);
+        return;
+      }
+
+      // 2. Limpeza segura
+      document.querySelectorAll(".checkout-container").forEach((c) => {
+        if (c.id !== containerId) c.innerHTML = ""; // Só limpa outros containers
+      });
 
       try {
-        container.innerHTML = "<p>Carregando...</p>";
+        // 3. Feedback visual
+        container.innerHTML = '<div class="loading">Carregando...</div>';
 
+        // 4. Criação da preferência
         const response = await fetch(
           "https://api-pagamentos-f5wv.onrender.com/criar_preferencia",
           {
@@ -32,19 +42,34 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         );
 
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const preference = await response.json();
 
-        mp.checkout({
-          preference: { id: preference.id },
-          render: {
-            container: `#checkout-${amount}`,
-            label: "Pagar Agora",
-            type: "wallet",
-          },
-        });
+        // 5. Renderização segura
+        if (document.getElementById(containerId)) {
+          mp.checkout({
+            preference: { id: preference.id },
+            render: {
+              container: `#${containerId}`,
+              label: "Pagar Agora",
+              type: "wallet",
+            },
+          });
+        }
       } catch (error) {
-        container.innerHTML = `<p class="error">Erro: ${error.message}</p>`;
-        console.error(error);
+        // 6. Tratamento de erros completo
+        console.error("Erro completo:", error);
+        if (container) {
+          container.innerHTML = `
+                    <div class="error">
+                        Erro: ${error.message}<br>
+                        <button onclick="location.reload()">Tentar novamente</button>
+                    </div>
+                `;
+        }
       }
     });
   });
