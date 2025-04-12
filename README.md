@@ -35,7 +35,7 @@ cd mercado-pago-checkout
 # Instale as dependências
 npm install
 
-# Configure as variáveis de ambiente
+# Configure as variáveis de ambiente Backend (.env)
 
 MP_ACCESS_TOKEN=SEU_ACCESS_TOKEN
 SUCCESS_URL=https://seusite.com/sucesso
@@ -45,6 +45,14 @@ PENDING_URL=https://seusite.com/pendente
 # Modo desenvolvimento:
 npm run dev
 ```
+## ⚙️ Configuração
+Frontend (public/conf-credenciais.js)
+```
+const mp = new MercadoPago('SUA_CHAVE_PUBLICA', {
+    locale: 'pt-BR'
+});
+```
+
 ## 📁 Acesso ao projeto
 Você pode acessar os arquivos do projeto clicando [aqui](https://api-pagamentos-f5wv.onrender.com/output.html).
 
